@@ -1,20 +1,45 @@
+//
+
 const TestCase = require("../models/TestCase");
+const Project = require("../models/Project");
 const ExcelJS = require("exceljs");
 
+// Helper function to generate testCaseId
+const generateTestCaseId = async () => {
+  const count = await TestCase.countDocuments();
+  return `TC-${String(count + 1).padStart(4, "0")}`;
+};
+
+// Helper function to generate script
+const generateScript = (testCase) => {
+  const { testCaseId, steps, expectedResult } = testCase;
+  return `Test Script for ${testCaseId}:
+1. Execute steps: ${steps || "No steps provided"}
+2. Verify: ${expectedResult || "No expected result provided"}`;
+};
+
+// Download test cases as Excel
 exports.downloadTestCasesExcel = async (req, res) => {
   try {
-    const { module } = req.query;
-    const query = module
-      ? { module: { $regex: `^${module}`, $options: "i" } }
-      : {};
+    const { module, projectId } = req.query;
+    const query = {};
+    if (module) query.module = { $regex: `^${module}`, $options: "i" };
+    if (projectId) query.projectId = projectId;
 
-    const testCases = await TestCase.find(query).sort({ createdAt: -1 });
+    // Get test cases with optional filtering
+    const testCases = await TestCase.find(query)
+      .populate("projectId", "name")
+      .sort({ createdAt: -1 });
 
+    // Create workbook and worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Test Cases");
 
+    // Define columns
     worksheet.columns = [
       { header: "Test Case ID", key: "testCaseId", width: 15 },
+      { header: "Title", key: "title", width: 20 },
+      { header: "Project", key: "projectName", width: 20 }, // New field
       { header: "Module", key: "module", width: 20 },
       { header: "Description", key: "description", width: 40 },
       { header: "Pre-Requisite", key: "preRequisite", width: 30 },
@@ -22,13 +47,18 @@ exports.downloadTestCasesExcel = async (req, res) => {
       { header: "Expected Result", key: "expectedResult", width: 40 },
       { header: "Priority", key: "priority", width: 10 },
       { header: "Automation Status", key: "automationStatus", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Script", key: "script", width: 50 },
       { header: "Created At", key: "createdAt", width: 20 },
       { header: "Updated At", key: "updatedAt", width: 20 },
     ];
 
+    // Add rows
     testCases.forEach((testCase) => {
       worksheet.addRow({
         testCaseId: testCase.testCaseId,
+        title: testCase.title,
+        projectName: testCase.projectId?.name || "N/A", // Populated project name
         module: testCase.module,
         description: testCase.description,
         preRequisite: testCase.preRequisite,
@@ -36,13 +66,17 @@ exports.downloadTestCasesExcel = async (req, res) => {
         expectedResult: testCase.expectedResult,
         priority: testCase.priority,
         automationStatus: testCase.automationStatus,
+        status: testCase.status,
+        script: testCase.script,
         createdAt: testCase.createdAt,
         updatedAt: testCase.updatedAt,
       });
     });
 
+    // Style the header row
     worksheet.getRow(1).font = { bold: true };
 
+    // Set response headers
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -52,6 +86,7 @@ exports.downloadTestCasesExcel = async (req, res) => {
       "attachment; filename=test-cases.xlsx"
     );
 
+    // Write to response
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
@@ -59,32 +94,60 @@ exports.downloadTestCasesExcel = async (req, res) => {
   }
 };
 
+// Create a new test case
 exports.createTestCase = async (req, res) => {
   try {
-    const testCase = new TestCase(req.body);
+    // Ensure title and projectId are provided
+    if (!req.body.title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+    if (!req.body.projectId) {
+      return res.status(400).json({ error: "Project ID is required" });
+    }
+    // Validate projectId
+    const project = await Project.findById(req.body.projectId);
+    if (!project) return res.status(404).json({ error: "Project not found" });
+    // Generate testCaseId
+    const testCaseId = await generateTestCaseId();
+    // Generate script
+    const testCaseData = { ...req.body, testCaseId };
+    const script = generateScript(testCaseData);
+    // Add testCaseId and script to req.body
+    testCaseData.script = script;
+    const testCase = new TestCase(testCaseData);
     const savedTestCase = await testCase.save();
+    // Add test case to project's testCases array
+    project.testCases.push(savedTestCase._id);
+    await project.save();
     res.status(201).json(savedTestCase);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
+// Get all test cases (filtered by module or projectId)
 exports.getTestCases = async (req, res) => {
   try {
-    const { module } = req.query;
-    const query = module
-      ? { module: { $regex: `^${module}`, $options: "i" } }
-      : {};
-    const testCases = await TestCase.find(query).sort({ createdAt: -1 });
+    const { module, projectId } = req.query;
+    const query = {};
+    if (module) query.module = { $regex: `^${module}`, $options: "i" };
+    if (projectId) query.projectId = projectId;
+    const testCases = await TestCase.find(query)
+      .populate("projectId", "name")
+      .sort({ createdAt: -1 });
     res.json(testCases);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// Get a single test case by ID
 exports.getTestCaseById = async (req, res) => {
   try {
-    const testCase = await TestCase.findById(req.params.id);
+    const testCase = await TestCase.findById(req.params.id).populate(
+      "projectId",
+      "name"
+    );
     if (!testCase)
       return res.status(404).json({ error: "Test case not found" });
     res.json(testCase);
@@ -93,11 +156,25 @@ exports.getTestCaseById = async (req, res) => {
   }
 };
 
+// Update a test case
 exports.updateTestCase = async (req, res) => {
   try {
-    const updated = await TestCase.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    // Prevent updating testCaseId and script
+    const updateData = { ...req.body };
+    delete updateData.testCaseId;
+    delete updateData.script;
+    // Validate projectId if provided
+    if (updateData.projectId) {
+      const project = await Project.findById(updateData.projectId);
+      if (!project) return res.status(404).json({ error: "Project not found" });
+    }
+    const updated = await TestCase.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+      }
+    ).populate("projectId", "name");
     if (!updated) return res.status(404).json({ error: "Test case not found" });
     res.json(updated);
   } catch (error) {
@@ -105,10 +182,18 @@ exports.updateTestCase = async (req, res) => {
   }
 };
 
+// Delete a test case
 exports.deleteTestCase = async (req, res) => {
   try {
-    const deleted = await TestCase.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: "Test case not found" });
+    const testCase = await TestCase.findById(req.params.id);
+    if (!testCase)
+      return res.status(404).json({ error: "Test case not found" });
+    // Remove test case from project's testCases array
+    await Project.updateOne(
+      { _id: testCase.projectId },
+      { $pull: { testCases: testCase._id } }
+    );
+    await testCase.deleteOne();
     res.json({ message: "Test case deleted" });
   } catch (error) {
     res.status(500).json({ error: error.message });
