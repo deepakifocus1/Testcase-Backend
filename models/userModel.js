@@ -1,0 +1,136 @@
+const mongoose = require("mongoose");
+const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { AppError } = require("../middleware/errorHandler");
+
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      match: [
+        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+        "Please provide a valid email address",
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      match: [
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)",
+      ],
+    },
+    role: {
+      type: String,
+      required: [true, "Role is required"],
+      enum: ["user", "admin", "manager"],
+    },
+    projects: [
+      {
+        type: String,
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+UserSchema.pre("save", async function (next) {
+  try {
+    if (this.isModified("password")) {
+      const salt = await bcryptjs.genSalt(10);
+      this.password = await bcryptjs.hash(this.password, salt);
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+UserSchema.statics.register = async function (userData) {
+  try {
+    const user = new this(userData);
+    await user.save();
+
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1d" }
+    );
+
+    return {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token,
+    };
+  } catch (error) {
+    if (error.code === 11000) {
+      throw new AppError(
+        `Duplicate field value: ${Object.keys(error.keyValue).join(", ")}`,
+        409,
+        "DUPLICATE_KEY"
+      );
+    }
+    if (error.name === "ValidationError") {
+      throw new AppError(
+        Object.values(error.errors)
+          .map((val) => val.message)
+          .join(", "),
+        400,
+        "VALIDATION_ERROR"
+      );
+    }
+    throw new AppError(error.message, 500, "REGISTRATION_ERROR");
+  }
+};
+
+UserSchema.statics.login = async function (email, password) {
+  try {
+    const user = await this.findOne({ email });
+    if (!user) {
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+    }
+
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1d" }
+    );
+
+    return {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token,
+    };
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError(error.message, 500, "LOGIN_ERROR");
+  }
+};
+
+module.exports = mongoose.model("User", UserSchema);
