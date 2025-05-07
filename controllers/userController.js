@@ -4,7 +4,10 @@ const mongoose = require("mongoose");
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find()
+      .select("-password")
+      .populate("projects")
+      .sort({ createdAt: -1 });
 
     if (!users || users.length === 0) {
       throw new AppError("No users found", 404, "NO_USERS_FOUND");
