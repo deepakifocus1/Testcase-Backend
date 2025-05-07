@@ -8,7 +8,7 @@ const testCaseSchema = new mongoose.Schema(
     description: String,
     createdBy: { type: String, default: "John" },
     preRequisite: String,
-    type: String,
+    type: { type: String, default: "Manual" },
     steps: String,
     expectedResult: String,
     status: String,
