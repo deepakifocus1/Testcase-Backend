@@ -3,17 +3,17 @@ const mongoose = require("mongoose");
 // Define the testCaseSchema first
 const testCaseSchema = new mongoose.Schema(
   {
-    title: { type: String },
-    userStory: { type: String },
-    testCaseId: { type: String, unique: true },
+    title: String,
+    userStory: String,
+    testCaseId: String,
     description: String,
     preRequisite: String,
     steps: String,
     expectedResult: String,
     status: String,
-    priority: { type: String },
-    automationStatus: { type: String },
-    module: { type: String },
+    priority: String,
+    automationStatus: String,
+    module: String,
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",

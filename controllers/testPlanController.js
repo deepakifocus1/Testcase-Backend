@@ -65,8 +65,58 @@ const getTestPlan = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Update test plan
+// @route   PUT /api/testplans/:testPlanId/testrun/:testRunId/module/:moduleId
+// @access  Private
+const updateTestPlanModuleStatus = asyncHandler(async (req, res) => {
+  const { testPlanId, testRunId, moduleId } = req.params;
+  const { status } = req.body;
+
+  // Validate input
+  if (!status) {
+    res.status(400);
+    throw new Error("Status is required");
+  }
+
+  // Find the test plan
+  const testPlan = await TestPlan.findById(testPlanId);
+
+  if (!testPlan) {
+    res.status(404);
+    throw new Error("Test plan not found");
+  }
+
+  // Find the test run
+  const testRun = testPlan.testRun.id(testRunId);
+
+  if (!testRun) {
+    res.status(404);
+    throw new Error("Test run not found");
+  }
+
+  // Find the module
+  const module = testRun.module.id(moduleId);
+
+  if (!module) {
+    res.status(404);
+    throw new Error("Module not found");
+  }
+
+  // Update the status
+  module.status = status;
+
+  // Save the updated test plan
+  await testPlan.save();
+
+  res.status(200).json({
+    success: true,
+    data: testPlan,
+  });
+});
+
 module.exports = {
   createTestPlan,
   getTestPlans,
   getTestPlan,
+  updateTestPlanModuleStatus,
 };
