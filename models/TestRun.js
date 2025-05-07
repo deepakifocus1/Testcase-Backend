@@ -4,7 +4,8 @@ const testRunSchema = new mongoose.Schema(
   {
     name: { type: String },
     description: String,
-    assignTo: { type: String },
+    assignedTo: { type: String },
+    module: { type: String },
     testCases: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestCase" }],
     },
