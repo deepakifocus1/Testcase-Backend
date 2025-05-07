@@ -6,6 +6,7 @@ const testCaseSchema = new mongoose.Schema(
     userStory: { type: String },
     testCaseId: { type: String, unique: true },
     description: String,
+    createdBy: { type: String, default: "John" },
     preRequisite: String,
     type: String,
     steps: String,
