@@ -17,7 +17,7 @@ exports.getProjects = async (req, res) => {
   try {
     const projects = await Project.find().populate(
       "testCases",
-      "title testCaseId"
+      "title testCaseId status"
     );
     res.json(projects);
   } catch (error) {
@@ -30,7 +30,7 @@ exports.getProjectById = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id).populate(
       "testCases",
-      "title testCaseId"
+      "title testCaseId status"
     );
     if (!project) return res.status(404).json({ error: "Project not found" });
     res.json(project);
