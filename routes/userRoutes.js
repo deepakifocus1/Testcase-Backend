@@ -4,7 +4,7 @@ const { getAllUsers, updateUser } = require("../controllers/userController");
 
 const router = express.Router();
 
-router.get("/", isAuthenticated, getAllUsers);
-router.put("/:userId", isAuthenticated, updateUser);
+router.get("/", getAllUsers);
+router.put("/:userId", updateUser);
 
 module.exports = router;
