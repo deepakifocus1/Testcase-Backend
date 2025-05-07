@@ -128,13 +128,13 @@ exports.createTestCase = async (req, res) => {
 // Get all test cases (filtered by module or projectId)
 exports.getTestCases = async (req, res) => {
   try {
-    const { module, projectId } = req.query;
-    const query = {};
-    if (module) query.module = { $regex: `^${module}`, $options: "i" };
-    if (projectId) query.projectId = projectId;
-    const testCases = await TestCase.find(query)
-      .populate("projectId", "name")
-      .sort({ createdAt: -1 });
+    // const { module, projectId } = req.query;
+    // const query = {};
+    // if (module) query.module = { $regex: `^${module}`, $options: "i" };
+    // if (projectId) query.projectId = projectId;
+    const testCases = await TestCase.find();
+    // .populate("projectId", "name")
+    // .sort({ createdAt: -1 });
     res.json(testCases);
   } catch (error) {
     res.status(500).json({ error: error.message });
