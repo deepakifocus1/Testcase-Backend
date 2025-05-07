@@ -7,12 +7,12 @@ const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Name is required"],
+
       trim: true,
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
+
       unique: true,
       trim: true,
       lowercase: true,
@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+
       match: [
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
         "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)",
@@ -31,12 +31,11 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      required: [true, "Role is required"],
-      enum: ["user", "admin", "manager"],
     },
     projects: [
       {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
       },
     ],
   },
