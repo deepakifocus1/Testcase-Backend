@@ -7,6 +7,9 @@ const projectSchema = new mongoose.Schema(
     projectType: {
       type: String,
     },
+    assignedTo: {
+      type: [String],
+    },
     testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestCase" }],
   },
   { timestamps: true }
