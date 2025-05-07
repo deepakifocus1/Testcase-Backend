@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const TestCase = require("./TestCase");
 
 const testRunSchema = new mongoose.Schema(
   {
