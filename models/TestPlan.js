@@ -38,23 +38,26 @@ const testRunSchema = new mongoose.Schema({
   },
 });
 
-const TestPlanSchema = new mongoose.Schema({
-  name: {
-    type: String,
+const TestPlanSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+    },
+    subHeading: {
+      type: String,
+    },
+    description: {
+      type: String,
+    },
+    dueDateFrom: {
+      type: Date,
+    },
+    dueDateTo: {
+      type: Date,
+    },
+    testRun: [testRunSchema],
   },
-  subHeading: {
-    type: String,
-  },
-  description: {
-    type: String,
-  },
-  dueDateFrom: {
-    type: Date,
-  },
-  dueDateTo: {
-    type: Date,
-  },
-  testRun: [testRunSchema],
-});
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("TestPlan", TestPlanSchema);
