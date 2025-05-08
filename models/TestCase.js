@@ -11,7 +11,7 @@ const testCaseSchema = new mongoose.Schema(
     type: { type: String, default: "Manual" },
     steps: String,
     expectedResult: String,
-    status: String,
+    status: { type: String, default: "Untested" },
     priority: { type: String },
     automationStatus: { type: String },
     module: { type: String },
