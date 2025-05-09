@@ -116,13 +116,26 @@ const updateTestPlanModuleStatus = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: testPlan,
+    data: [testPlan, testRun],
   });
 });
+
+const getTestPlanRun = async (req, res) => {
+  const testRuns = await TestPlan.findById(req.params.id);
+  if (!testRuns) {
+    res.status(404);
+    throw new Error("Test plan not found");
+  }
+  res.status(200).json({
+    success: true,
+    data: testRuns.testRun,
+  });
+};
 
 module.exports = {
   createTestPlan,
   getTestPlans,
   getTestPlan,
   updateTestPlanModuleStatus,
+  getTestPlanRun,
 };
