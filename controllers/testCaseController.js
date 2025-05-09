@@ -236,15 +236,44 @@ exports.getTestCaseById = async (req, res) => {
 
 exports.updateTestCase = async (req, res) => {
   try {
-    const updatedData = { ...req.body };
-    delete updatedData.testCaseId;
-    delete updatedData.script;
+    const updateData = { ...req.body };
+    delete updateData.testCaseId;
+    delete updateData.script;
 
     const { updatedBy } = req.body;
     if (!updatedBy) {
-      return res.status(400).json({ error: "UpdatedBy is Required " });
+      return res.status(400).json({ error: "updatedBy is required" });
     }
-  } catch (error) {}
+
+    if (updateData.projectId) {
+      const project = await Project.findById(updateData.projectId);
+      if (!project) return res.status(404).json({ error: "Project not found" });
+    }
+
+    const updated = await TestCase.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+      }
+    ).populate("projectId", "name");
+
+    if (!updated) return res.status(404).json({ error: "Test case not found" });
+
+    // ✅ Log the activity
+    await ActivityLog.create({
+      action: "updated",
+      entity: "TestCase",
+      entityId: updated._id,
+      performedBy: updatedBy,
+      message: `${updatedBy} updated test case "${updated.title}"`,
+      comment: `${updated.module}`,
+    });
+
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 // Delete a test case
