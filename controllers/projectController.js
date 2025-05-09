@@ -1,11 +1,19 @@
 const Project = require("../models/Project");
 const TestCase = require("../models/TestCase");
+const { createActivity } = require("../controllers/recentActivity"); // Import createActivity from recentActivity.js
 
 // Create a new project
 exports.createProject = async (req, res) => {
   try {
     const project = new Project(req.body);
     const savedProject = await project.save();
+    if (savedProject) {
+      createActivity({
+        createdBy: req.user.name,
+        activityModule: "Project",
+        activity: savedProject.name,
+      });
+    }
     res.status(201).json(savedProject);
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -1,5 +1,6 @@
 const TestPlan = require("../models/TestPlan");
 const asyncHandler = require("express-async-handler");
+const { createActivity } = require("../controllers/recentActivity");
 
 // @desc    Create a new test plan
 // @route   POST /api/testplans
@@ -23,8 +24,13 @@ const createTestPlan = asyncHandler(async (req, res) => {
     dueDateTo,
     testRun: testRun || [],
   });
-
   if (testPlan) {
+    const activityPayload = {
+      createdBy: req.user.name,
+      activityModule: "Test Plan",
+      activity: testPlan.name,
+    };
+    createActivity(activityPayload);
     res.status(201).json({
       success: true,
       data: testPlan,
