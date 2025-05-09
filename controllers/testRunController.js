@@ -1,11 +1,20 @@
 const TestRun = require("../models/TestRun");
-
+const { createActivity } = require("../controllers/recentActivity");
 // Create a new test run
 exports.createTestRun = async (req, res) => {
   try {
     const testRun = new TestRun(req.body);
     const savedTestRun = await testRun.save();
-    await savedTestRun.populate("testCases", "");
+    const data = await savedTestRun.populate("testCases", "");
+    if (data) {
+      const activityPayload = {
+        createdBy: req.user.name,
+        activityModule: "Test Run",
+        activity: data.name,
+      };
+
+      createActivity(activityPayload);
+    }
     res.status(201).json(savedTestRun);
   } catch (error) {
     res.status(400).json({ error: error.message });

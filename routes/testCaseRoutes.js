@@ -10,9 +10,10 @@ const {
 } = require("../controllers/testCaseController");
 const upload = require("../middleware/multer");
 const { uploadTestCases } = require("../controllers/uploadController");
+const { isAuthenticated } = require("../middleware/authMiddleware");
 
 // Routes
-router.post("/", createTestCase); // Create
+router.post("/", isAuthenticated, createTestCase); // Create
 router.post("/upload", upload.single("file"), uploadTestCases);
 router.get("/download", downloadTestCasesExcel);
 router.get("/", getTestCases); // Get all or by module

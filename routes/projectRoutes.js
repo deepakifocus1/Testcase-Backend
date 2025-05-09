@@ -8,9 +8,10 @@ const {
   deleteProject,
   addTestCaseToProject,
 } = require("../controllers/projectController");
+const { isAuthenticated } = require("../middleware/authMiddleware");
 
 // Routes
-router.post("/", createProject); // Create
+router.post("/", isAuthenticated, createProject); // Create
 router.get("/", getProjects); // Get all
 router.get("/:id", getProjectById); // Get by ID
 router.put("/:id", updateProject); // Update

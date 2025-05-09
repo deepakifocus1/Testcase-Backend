@@ -2,6 +2,7 @@ const TestCase = require("../models/TestCase");
 const Project = require("../models/Project");
 const ExcelJS = require("exceljs");
 const ActivityLog = require("../models/ActivityLog");
+const { createActivity } = require("../controllers/recentActivity");
 
 // Helper function to generate testCaseId
 const generateTestCaseId = async () => {
@@ -110,6 +111,15 @@ exports.createTestCase = async (req, res) => {
 
     const testCase = new TestCase({ ...req.body, testCaseId, script });
     const savedTestCase = await testCase.save();
+
+    if (savedTestCase) {
+      const activityPayload = {
+        createdBy: req.user.name,
+        activityModule: "Test Case",
+        activity: savedTestCase.title,
+      };
+      createActivity(activityPayload);
+    }
 
     project.testCases.push(savedTestCase._id);
     await project.save();

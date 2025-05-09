@@ -7,8 +7,9 @@ const {
   updateTestRun,
   deleteTestRun,
 } = require("../controllers/testRunController");
+const { isAuthenticated } = require("../middleware/authMiddleware");
 
-router.post("/", createTestRun);
+router.post("/", isAuthenticated, createTestRun);
 router.get("/", getTestRuns);
 router.get("/:id", getTestRunById);
 router.put("/:id", updateTestRun);
