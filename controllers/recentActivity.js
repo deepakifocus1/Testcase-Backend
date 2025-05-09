@@ -9,6 +9,16 @@ const createActivity = async (payload) => {
   }
 };
 
+const getAllRecentActivities = async (req, res) => {
+  try {
+    const recentActivities = await RecentActivity.find();
+    res.status(200).json(recentActivities);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 module.exports = {
   createActivity,
+  getAllRecentActivities,
 };
