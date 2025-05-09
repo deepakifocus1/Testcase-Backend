@@ -2,7 +2,6 @@ const TestCase = require("../models/TestCase");
 const Project = require("../models/Project");
 const ExcelJS = require("exceljs");
 const ActivityLog = require("../models/ActivityLog");
-const { createActivity } = require("../controllers/recentActivity");
 
 // Helper function to generate testCaseId
 const generateTestCaseId = async () => {
@@ -112,15 +111,6 @@ exports.createTestCase = async (req, res) => {
     const testCase = new TestCase({ ...req.body, testCaseId, script });
     const savedTestCase = await testCase.save();
 
-    if (savedTestCase) {
-      const activityPayload = {
-        createdBy: req.user.name,
-        activityModule: "Test Case",
-        activity: savedTestCase.title,
-      };
-      createActivity(activityPayload);
-    }
-
     project.testCases.push(savedTestCase._id);
     await project.save();
 
@@ -219,29 +209,42 @@ exports.getTestCaseById = async (req, res) => {
 };
 
 // Update a test case
+// exports.updateTestCase = async (req, res) => {
+//   try {
+//     // Prevent updating testCaseId and script
+//     const updateData = { ...req.body };
+//     delete updateData.testCaseId;
+//     delete updateData.script;
+//     // Validate projectId if provided
+//     if (updateData.projectId) {
+//       const project = await Project.findById(updateData.projectId);
+//       if (!project) return res.status(404).json({ error: "Project not found" });
+//     }
+//     const updated = await TestCase.findByIdAndUpdate(
+//       req.params.id,
+//       updateData,
+//       {
+//         new: true,
+//       }
+//     ).populate("projectId", "name");
+//     if (!updated) return res.status(404).json({ error: "Test case not found" });
+//     res.json(updated);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
 exports.updateTestCase = async (req, res) => {
   try {
-    // Prevent updating testCaseId and script
-    const updateData = { ...req.body };
-    delete updateData.testCaseId;
-    delete updateData.script;
-    // Validate projectId if provided
-    if (updateData.projectId) {
-      const project = await Project.findById(updateData.projectId);
-      if (!project) return res.status(404).json({ error: "Project not found" });
+    const updatedData = { ...req.body };
+    delete updatedData.testCaseId;
+    delete updatedData.script;
+
+    const { updatedBy } = req.body;
+    if (!updatedBy) {
+      return res.status(400).json({ error: "UpdatedBy is Required " });
     }
-    const updated = await TestCase.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      {
-        new: true,
-      }
-    ).populate("projectId", "name");
-    if (!updated) return res.status(404).json({ error: "Test case not found" });
-    res.json(updated);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
+  } catch (error) {}
 };
 
 // Delete a test case
