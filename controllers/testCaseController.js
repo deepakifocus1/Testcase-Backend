@@ -1,8 +1,7 @@
-//
-
 const TestCase = require("../models/TestCase");
 const Project = require("../models/Project");
 const ExcelJS = require("exceljs");
+const ActivityLog = require("../models/ActivityLog");
 
 // Helper function to generate testCaseId
 const generateTestCaseId = async () => {
@@ -94,47 +93,100 @@ exports.downloadTestCasesExcel = async (req, res) => {
   }
 };
 
-// Create a new test case
 exports.createTestCase = async (req, res) => {
   try {
-    // Ensure title and projectId are provided
-    if (!req.body.title) {
-      return res.status(400).json({ error: "Title is required" });
+    const { title, projectId, createdBy } = req.body;
+    if (!title || !projectId || !createdBy) {
+      return res
+        .status(400)
+        .json({ error: "Title, Project ID, and CreatedBy are required" });
     }
-    if (!req.body.projectId) {
-      return res.status(400).json({ error: "Project ID is required" });
-    }
-    // Validate projectId
-    const project = await Project.findById(req.body.projectId);
+
+    const project = await Project.findById(projectId);
     if (!project) return res.status(404).json({ error: "Project not found" });
-    // Generate testCaseId
+
     const testCaseId = await generateTestCaseId();
-    // Generate script
-    const testCaseData = { ...req.body, testCaseId };
-    const script = generateScript(testCaseData);
-    // Add testCaseId and script to req.body
-    testCaseData.script = script;
-    const testCase = new TestCase(testCaseData);
+    const script = generateScript({ ...req.body, testCaseId });
+
+    const testCase = new TestCase({ ...req.body, testCaseId, script });
     const savedTestCase = await testCase.save();
-    // Add test case to project's testCases array
+
     project.testCases.push(savedTestCase._id);
     await project.save();
+
+    // ✅ Log the activity
+    await ActivityLog.create({
+      action: "created",
+      entity: "TestCase",
+      entityId: savedTestCase._id,
+      performedBy: createdBy,
+      message: `${createdBy} created test case "${savedTestCase.title}"`,
+      comment: `${savedTestCase.module}`,
+    });
+
     res.status(201).json(savedTestCase);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
+// Create a new test case
+// exports.createTestCase = async (req, res) => {
+//   try {
+//     // Ensure title and projectId are provided
+//     if (!req.body.title) {
+//       return res.status(400).json({ error: "Title is required" });
+//     }
+//     if (!req.body.projectId) {
+//       return res.status(400).json({ error: "Project ID is required" });
+//     }
+//     // Validate projectId
+//     const project = await Project.findById(req.body.projectId);
+//     if (!project) return res.status(404).json({ error: "Project not found" });
+//     // Generate testCaseId
+//     const testCaseId = await generateTestCaseId();
+//     // Generate script
+//     const testCaseData = { ...req.body, testCaseId };
+//     const script = generateScript(testCaseData);
+//     // Add testCaseId and script to req.body
+//     testCaseData.script = script;
+//     const testCase = new TestCase(testCaseData);
+//     const savedTestCase = await testCase.save();
+//     // Add test case to project's testCases array
+//     project.testCases.push(savedTestCase._id);
+//     await project.save();
+//     res.status(201).json(savedTestCase);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
 // Get all test cases (filtered by module or projectId)
+// exports.getTestCases = async (req, res) => {
+//   try {
+//     const testCases = await TestCase.find();
+//     res.json(testCases);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 exports.getTestCases = async (req, res) => {
   try {
-    // const { module, projectId } = req.query;
-    // const query = {};
-    // if (module) query.module = { $regex: `^${module}`, $options: "i" };
-    // if (projectId) query.projectId = projectId;
-    const testCases = await TestCase.find();
-    // .populate("projectId", "name")
-    // .sort({ createdAt: -1 });
+    const testCases = await TestCase.aggregate([
+      {
+        $lookup: {
+          from: "activitylogs", // collection name (not model name)
+          localField: "_id",
+          foreignField: "entityId",
+          as: "activityLogs",
+          pipeline: [
+            { $match: { entity: "TestCase" } }, // only logs for TestCase
+            { $sort: { createdAt: -1 } }, // optional: newest first
+          ],
+        },
+      },
+    ]);
     res.json(testCases);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -181,6 +233,7 @@ exports.updateTestCase = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
 
 // Delete a test case
 exports.deleteTestCase = async (req, res) => {
