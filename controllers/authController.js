@@ -6,14 +6,25 @@ const register = async (req, res, next) => {
     if (!req.body) {
       throw new AppError("Request body is required", 400, "MISSING_BODY");
     }
-    const { name, email, password, role, projects } = req.body;
-    if (!name || !email || !password || !role) {
-      throw new AppError(
-        "Name, email, password, and role are required",
-        400,
-        "MISSING_FIELDS"
-      );
-    }
+    const {
+      firstName,
+      lastName,
+      jobTitle,
+      language,
+      timeZone,
+      email,
+      password,
+      role,
+      team,
+      projects,
+    } = req.body;
+    // if (!firstName || !jobTitle || !email || !role || !language || !timeZone) {
+    //   throw new AppError(
+    //     "firstName, email, and role are required",
+    //     400,
+    //     "MISSING_FIELDS"
+    //   );
+    // }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new AppError(
@@ -22,7 +33,18 @@ const register = async (req, res, next) => {
         "USER_EXISTS"
       );
     }
-    const userData = { name, email, password, role, projects: projects || [] };
+    const userData = {
+      firstName,
+      lastName,
+      jobTitle,
+      language,
+      timeZone,
+      email,
+      password,
+      role,
+      team,
+      projects: projects || [],
+    };
     const result = await User.register(userData);
     res.status(201).json({
       status: "success",
@@ -47,6 +69,7 @@ const login = async (req, res, next) => {
       );
     }
     const result = await User.login(email, password);
+
     res.status(200).json({
       status: "success",
       data: { user: result.user, token: result.token },

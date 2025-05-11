@@ -5,14 +5,12 @@ const { AppError } = require("../middleware/errorHandler");
 
 const UserSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
+    firstName: String,
+    lastName: String,
 
-      trim: true,
-    },
     email: {
       type: String,
-
+      required: true,
       unique: true,
       trim: true,
       lowercase: true,
@@ -23,15 +21,19 @@ const UserSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-
       match: [
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
         "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)",
       ],
+      default: "Ifocus@123",
     },
     role: {
       type: String,
     },
+    jobTitle: String,
+    timeZone: String,
+    language: String,
+    team: String,
     projects: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -68,12 +70,7 @@ UserSchema.statics.register = async function (userData) {
     );
 
     return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user,
       token,
     };
   } catch (error) {
@@ -116,12 +113,7 @@ UserSchema.statics.login = async function (email, password) {
     );
 
     return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user,
       token,
     };
   } catch (error) {

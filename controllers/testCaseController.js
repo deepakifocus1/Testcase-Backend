@@ -130,47 +130,6 @@ exports.createTestCase = async (req, res) => {
   }
 };
 
-// Create a new test case
-// exports.createTestCase = async (req, res) => {
-//   try {
-//     // Ensure title and projectId are provided
-//     if (!req.body.title) {
-//       return res.status(400).json({ error: "Title is required" });
-//     }
-//     if (!req.body.projectId) {
-//       return res.status(400).json({ error: "Project ID is required" });
-//     }
-//     // Validate projectId
-//     const project = await Project.findById(req.body.projectId);
-//     if (!project) return res.status(404).json({ error: "Project not found" });
-//     // Generate testCaseId
-//     const testCaseId = await generateTestCaseId();
-//     // Generate script
-//     const testCaseData = { ...req.body, testCaseId };
-//     const script = generateScript(testCaseData);
-//     // Add testCaseId and script to req.body
-//     testCaseData.script = script;
-//     const testCase = new TestCase(testCaseData);
-//     const savedTestCase = await testCase.save();
-//     // Add test case to project's testCases array
-//     project.testCases.push(savedTestCase._id);
-//     await project.save();
-//     res.status(201).json(savedTestCase);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
-
-// Get all test cases (filtered by module or projectId)
-// exports.getTestCases = async (req, res) => {
-//   try {
-//     const testCases = await TestCase.find();
-//     res.json(testCases);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 exports.getTestCases = async (req, res) => {
   try {
     const testCases = await TestCase.aggregate([
@@ -207,32 +166,6 @@ exports.getTestCaseById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-// Update a test case
-// exports.updateTestCase = async (req, res) => {
-//   try {
-//     // Prevent updating testCaseId and script
-//     const updateData = { ...req.body };
-//     delete updateData.testCaseId;
-//     delete updateData.script;
-//     // Validate projectId if provided
-//     if (updateData.projectId) {
-//       const project = await Project.findById(updateData.projectId);
-//       if (!project) return res.status(404).json({ error: "Project not found" });
-//     }
-//     const updated = await TestCase.findByIdAndUpdate(
-//       req.params.id,
-//       updateData,
-//       {
-//         new: true,
-//       }
-//     ).populate("projectId", "name");
-//     if (!updated) return res.status(404).json({ error: "Test case not found" });
-//     res.json(updated);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
 
 exports.updateTestCase = async (req, res) => {
   try {
