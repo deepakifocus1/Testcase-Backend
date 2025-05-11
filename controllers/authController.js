@@ -7,8 +7,9 @@ const register = async (req, res, next) => {
       throw new AppError("Request body is required", 400, "MISSING_BODY");
     }
     const {
-      firstName,
-      lastName,
+      // firstName,
+      // lastName,
+      name,
       jobTitle,
       language,
       timeZone,
@@ -34,8 +35,9 @@ const register = async (req, res, next) => {
       );
     }
     const userData = {
-      firstName,
-      lastName,
+      name,
+      // firstName,
+      // lastName,
       jobTitle,
       language,
       timeZone,

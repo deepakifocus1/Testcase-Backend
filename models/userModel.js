@@ -5,9 +5,9 @@ const { AppError } = require("../middleware/errorHandler");
 
 const UserSchema = new mongoose.Schema(
   {
-    firstName: String,
-    lastName: String,
-
+    // firstName: String,
+    // lastName: String,
+    name: String,
     email: {
       type: String,
       required: true,

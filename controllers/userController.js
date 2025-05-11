@@ -26,8 +26,9 @@ const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
     const {
-      firstName,
-      lastName,
+      // firstName,
+      // lastName,
+      name,
       email,
       jobTitle,
       timeZone,
@@ -42,8 +43,9 @@ const updateUser = async (req, res, next) => {
     }
 
     const updateData = {};
-    if (firstName) updateData.firstName = firstName;
-    if (lastName) updateData.lastName = lastName;
+    // if (firstName) updateData.firstName = firstName;
+    // if (lastName) updateData.lastName = lastName;
+    if (name) updateData.name = name;
     if (email) updateData.email = email;
     if (jobTitle) updateData.jobTitle = jobTitle;
     if (timeZone) updateData.timeZone = timeZone;
