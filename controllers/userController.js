@@ -25,26 +25,14 @@ const getAllUsers = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const {
-      // firstName,
-      // lastName,
-      name,
-      email,
-      jobTitle,
-      timeZone,
-      language,
-      role,
-      team,
-      projects,
-    } = req.body || {};
+    const { name, email, jobTitle, timeZone, language, role, team, projects } =
+      req.body || {};
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       throw new AppError("Valid user ID is required", 400, "INVALID_USER_ID");
     }
 
     const updateData = {};
-    // if (firstName) updateData.firstName = firstName;
-    // if (lastName) updateData.lastName = lastName;
     if (name) updateData.name = name;
     if (email) updateData.email = email;
     if (jobTitle) updateData.jobTitle = jobTitle;
@@ -66,6 +54,15 @@ const updateUser = async (req, res, next) => {
         );
       }
       updateData.$addToSet = { projects: { $each: validProjects } };
+    }
+    if (email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser && existingUser._id.toString() !== userId) {
+        return res.status(409).json({
+          status: "error",
+          message: "Email is already in use by another user",
+        });
+      }
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
