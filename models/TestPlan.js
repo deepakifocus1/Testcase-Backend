@@ -13,6 +13,7 @@ const testCaseSchema = new mongoose.Schema(
     status: String,
     priority: String,
     automationStatus: String,
+    actualResults: String,
     module: String,
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -56,7 +57,7 @@ const TestPlanSchema = new mongoose.Schema(
     dueDateTo: {
       type: Date,
     },
-    actualResults: String,
+
     testRun: [testRunSchema],
   },
   { timestamps: true }
