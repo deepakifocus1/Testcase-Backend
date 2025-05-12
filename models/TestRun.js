@@ -6,6 +6,7 @@ const testRunSchema = new mongoose.Schema(
     description: String,
     assignedTo: { type: String },
     module: { type: String },
+    projectId: { type: String },
     dueDateFrom: { type: Date },
     dueDateTo: { type: Date },
     testCases: {
