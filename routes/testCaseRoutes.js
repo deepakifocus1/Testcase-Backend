@@ -18,7 +18,7 @@ router.post("/upload", upload.single("file"), uploadTestCases);
 router.get("/download", downloadTestCasesExcel);
 router.get("/", getTestCases); // Get all or by module
 router.get("/:id", getTestCaseById); // Get by ID
-router.put("/:id", updateTestCase); // Update
+router.put("/:id", isAuthenticated, updateTestCase); // Update
 router.delete("/:id", deleteTestCase); // Delete
 
 module.exports = router;
