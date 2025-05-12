@@ -6,8 +6,15 @@ const { createActivity } = require("../controllers/recentActivity");
 // @route   POST /api/testplans
 // @access  Private
 const createTestPlan = asyncHandler(async (req, res) => {
-  const { name, subHeading, description, dueDateFrom, dueDateTo, testRun } =
-    req.body;
+  const {
+    name,
+    createdBy,
+    subHeading,
+    description,
+    dueDateFrom,
+    dueDateTo,
+    testRun,
+  } = req.body;
 
   // Validate required fields
   if (!name) {
@@ -22,6 +29,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     description,
     dueDateFrom,
     dueDateTo,
+    createdBy,
     testRun: testRun || [],
   });
   if (testPlan) {

@@ -46,6 +46,7 @@ const TestPlanSchema = new mongoose.Schema(
     subHeading: {
       type: String,
     },
+    createdBy: String,
     description: {
       type: String,
     },
