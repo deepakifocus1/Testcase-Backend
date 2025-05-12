@@ -4,6 +4,7 @@ const recentActivitySchema = new mongoose.Schema(
     createdBy: String,
     activityModule: String,
     activity: String,
+    type: String,
   },
   { timestamps: true }
 );

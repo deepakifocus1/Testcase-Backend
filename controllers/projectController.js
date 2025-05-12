@@ -12,6 +12,7 @@ exports.createProject = async (req, res) => {
         createdBy: req.user.name,
         activityModule: "Project",
         activity: savedProject.name,
+        type: "created",
       });
     }
     res.status(201).json(savedProject);
@@ -54,9 +55,18 @@ exports.updateProject = async (req, res) => {
       new: true,
     });
     if (!updated) return res.status(404).json({ error: "Project not found" });
+    if (updated) {
+      console.log(updated);
+      createActivity({
+        createdBy: req.user.name,
+        activityModule: "Project",
+        activity: updated.name,
+        type: "updated",
+      });
+    }
     res.json(updated);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: error.message, stack: error.stack });
   }
 };
 
@@ -94,6 +104,7 @@ exports.addTestCaseToProject = async (req, res) => {
       project.testCases.push(testCaseId);
       await project.save();
     }
+
     res.json({ message: "Test case added to project", project });
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -14,5 +14,9 @@ router.route("/").post(isAuthenticated, createTestPlan).get(getTestPlans);
 
 router.get("/testPlanRun/:id", getTestPlanRun);
 router.route("/:id").get(getTestPlan);
-router.put("/:testPlanId/:testRunId/:moduleId", updateTestPlanModuleStatus);
+router.put(
+  "/:testPlanId/:testRunId/:moduleId",
+  isAuthenticated,
+  updateTestPlanModuleStatus
+);
 module.exports = router;

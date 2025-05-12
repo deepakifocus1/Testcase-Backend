@@ -2,6 +2,7 @@ const TestCase = require("../models/TestCase");
 const Project = require("../models/Project");
 const ExcelJS = require("exceljs");
 const ActivityLog = require("../models/ActivityLog");
+const { createActivity } = require("./recentActivity");
 
 // Helper function to generate testCaseId
 const generateTestCaseId = async () => {
@@ -111,6 +112,15 @@ exports.createTestCase = async (req, res) => {
     const testCase = new TestCase({ ...req.body, testCaseId, script });
     const savedTestCase = await testCase.save();
 
+    if (savedTestCase) {
+      createActivity({
+        createdBy: req.user.name,
+        activityModule: "Test Case",
+        activity: savedTestCase.title,
+        type: "created",
+      });
+    }
+
     project.testCases.push(savedTestCase._id);
     await project.save();
 
@@ -192,7 +202,14 @@ exports.updateTestCase = async (req, res) => {
     ).populate("projectId", "name");
 
     if (!updated) return res.status(404).json({ error: "Test case not found" });
-
+    if (updated) {
+      createActivity({
+        createdBy: req.user.name,
+        activityModule: "Test Case",
+        activity: updated.title,
+        type: "updated",
+      });
+    }
     // ✅ Log the activity
     await ActivityLog.create({
       action: "updated",

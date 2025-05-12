@@ -12,7 +12,7 @@ const { isAuthenticated } = require("../middleware/authMiddleware");
 router.post("/", isAuthenticated, createTestRun);
 router.get("/", getTestRuns);
 router.get("/:id", getTestRunById);
-router.put("/:id", updateTestRun);
+router.put("/:id", isAuthenticated, updateTestRun);
 router.delete("/:id", deleteTestRun);
 
 module.exports = router;

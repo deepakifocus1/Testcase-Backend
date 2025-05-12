@@ -37,6 +37,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
       createdBy: req.user.name,
       activityModule: "Test Plan",
       activity: testPlan.name,
+      type: "created",
     };
     createActivity(activityPayload);
     res.status(201).json({
@@ -120,7 +121,15 @@ const updateTestPlanModuleStatus = asyncHandler(async (req, res) => {
   module.status = status;
 
   // Save the updated test plan
-  await testPlan.save();
+  const response = await testPlan.save();
+  if (response) {
+    createActivity({
+      createdBy: req.user.name,
+      activityModule: "Test Plan",
+      activity: response.name,
+      type: "updated",
+    });
+  }
 
   res.status(200).json({
     success: true,

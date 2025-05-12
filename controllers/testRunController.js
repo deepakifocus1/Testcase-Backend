@@ -11,6 +11,7 @@ exports.createTestRun = async (req, res) => {
         createdBy: req.user.name,
         activityModule: "Test Run",
         activity: data.name,
+        type: "created",
       };
 
       createActivity(activityPayload);
@@ -53,6 +54,14 @@ exports.updateTestRun = async (req, res) => {
       runValidators: true,
     }).populate("testCases", "");
     if (!updated) return res.status(404).json({ error: "Test run not found" });
+    if (updated) {
+      createActivity({
+        createdBy: req.user.name,
+        activityModule: "Test Run",
+        activity: updated.name,
+        type: "updated",
+      });
+    }
     res.json(updated);
   } catch (error) {
     res.status(400).json({ error: error.message });

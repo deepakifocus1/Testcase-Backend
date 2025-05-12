@@ -14,7 +14,7 @@ const { isAuthenticated } = require("../middleware/authMiddleware");
 router.post("/", isAuthenticated, createProject); // Create
 router.get("/", getProjects); // Get all
 router.get("/:id", getProjectById); // Get by ID
-router.put("/:id", updateProject); // Update
+router.put("/:id", isAuthenticated, updateProject); // Update
 router.delete("/:id", deleteProject); // Delete
 router.post("/:id/test-cases", addTestCaseToProject); // Add test case to project
 
