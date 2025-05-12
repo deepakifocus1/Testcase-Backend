@@ -25,7 +25,7 @@ exports.getProjects = async (req, res) => {
   try {
     const projects = await Project.find().populate(
       "testCases",
-      "title testCaseId status"
+      "title testCaseId status module"
     );
     res.json(projects);
   } catch (error) {
