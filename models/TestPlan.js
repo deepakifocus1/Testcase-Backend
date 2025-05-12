@@ -56,6 +56,7 @@ const TestPlanSchema = new mongoose.Schema(
     dueDateTo: {
       type: Date,
     },
+    actualResults: String,
     testRun: [testRunSchema],
   },
   { timestamps: true }

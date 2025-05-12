@@ -14,6 +14,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     dueDateFrom,
     dueDateTo,
     testRun,
+    actualResults,
   } = req.body;
 
   // Validate required fields
@@ -30,6 +31,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     dueDateFrom,
     dueDateTo,
     createdBy,
+    actualResults,
     testRun: testRun || [],
   });
   if (testPlan) {
