@@ -42,7 +42,7 @@ const register = async (req, res, next) => {
       language,
       timeZone,
       email,
-      password,
+      password: "Ifocus@123",
       role,
       team,
       projects: projects || [],
