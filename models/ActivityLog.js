@@ -22,6 +22,9 @@ const activityLogSchema = new mongoose.Schema(
     comment: {
       type: String,
     },
+    creatorName: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
