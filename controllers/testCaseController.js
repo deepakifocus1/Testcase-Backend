@@ -131,7 +131,7 @@ exports.createTestCase = async (req, res) => {
       entityId: savedTestCase._id,
       creatorName: req.user.name,
       performedBy: createdBy,
-      message: `${createdBy} created test case "${savedTestCase.title}"`,
+      message: `${req.user.name} created test case "${savedTestCase.title}"`,
       comment: `${savedTestCase.module}`,
     });
 
