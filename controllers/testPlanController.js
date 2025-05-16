@@ -13,6 +13,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     description,
     dueDateFrom,
     dueDateTo,
+    projectId,
     testRun,
   } = req.body;
 
@@ -30,6 +31,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     dueDateFrom,
     dueDateTo,
     createdBy,
+    projectId,
     testRun: testRun || [],
   });
   if (testPlan) {
