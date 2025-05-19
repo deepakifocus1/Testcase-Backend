@@ -24,10 +24,7 @@ exports.createProject = async (req, res) => {
 // Get all projects
 exports.getProjects = async (req, res) => {
   try {
-    const projects = await Project.find().populate(
-      "testCases",
-      "title testCaseId status module"
-    );
+    const projects = await Project.find().populate("testCases", "title testCaseId status module","createdBy");
     res.json(projects);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -37,10 +34,7 @@ exports.getProjects = async (req, res) => {
 // Get a single project by ID
 exports.getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate(
-      "testCases",
-      "title testCaseId status"
-    );
+    const project = await Project.findById(req.params.id).populate("testCases", "title testCaseId status");
     if (!project) return res.status(404).json({ error: "Project not found" });
     res.json(project);
   } catch (error) {
@@ -76,10 +70,7 @@ exports.deleteProject = async (req, res) => {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ error: "Project not found" });
     // Remove projectId from associated test cases
-    await TestCase.updateMany(
-      { projectId: project._id },
-      { $unset: { projectId: "" } }
-    );
+    await TestCase.updateMany({ projectId: project._id }, { $unset: { projectId: "" } });
     await project.deleteOne();
     res.json({ message: "Project deleted" });
   } catch (error) {
@@ -94,8 +85,7 @@ exports.addTestCaseToProject = async (req, res) => {
     const project = await Project.findById(req.params.id);
     if (!project) return res.status(404).json({ error: "Project not found" });
     const testCase = await TestCase.findById(testCaseId);
-    if (!testCase)
-      return res.status(404).json({ error: "Test case not found" });
+    if (!testCase) return res.status(404).json({ error: "Test case not found" });
     // Update test case's projectId
     testCase.projectId = project._id;
     await testCase.save();

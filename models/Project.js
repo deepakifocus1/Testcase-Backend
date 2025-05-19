@@ -11,6 +11,10 @@ const projectSchema = new mongoose.Schema(
       type: [String],
     },
     testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestCase" }],
+    createdBy:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },  
   },
   { timestamps: true }
 );
