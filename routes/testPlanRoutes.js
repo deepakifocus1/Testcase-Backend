@@ -7,6 +7,7 @@ const {
   getTestPlan,
   updateTestPlanModuleStatus,
   getTestPlanRun,
+  getTestCaseById,
 } = require("../controllers/testPlanController");
 
 // Routes for test plans
@@ -19,4 +20,5 @@ router.put(
   isAuthenticated,
   updateTestPlanModuleStatus
 );
+router.get("/:testPlanId/:testRunId/:moduleId", getTestCaseById);
 module.exports = router;
