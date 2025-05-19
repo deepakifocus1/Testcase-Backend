@@ -4,11 +4,9 @@ const { AppError } = require("../middleware/errorHandler");
 const register = async (req, res, next) => {
   try {
     if (!req.body) {
-      throw new AppError("Request body is required", 400, "MISSING_BODY");
+      throw new AppError("Request body is required", 400);
     }
     const {
-      // firstName,
-      // lastName,
       name,
       jobTitle,
       language,
@@ -17,27 +15,16 @@ const register = async (req, res, next) => {
       password,
       role,
       team,
+      isApproved,
       projects,
     } = req.body;
-    // if (!firstName || !jobTitle || !email || !role || !language || !timeZone) {
-    //   throw new AppError(
-    //     "firstName, email, and role are required",
-    //     400,
-    //     "MISSING_FIELDS"
-    //   );
-    // }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new AppError(
-        "User with this email already exists",
-        409,
-        "USER_EXISTS"
-      );
+      throw new AppError("User with this email already exists", 409);
     }
     const userData = {
       name,
-      // firstName,
-      // lastName,
       jobTitle,
       language,
       timeZone,
@@ -45,6 +32,7 @@ const register = async (req, res, next) => {
       password: "Ifocus@123",
       role,
       team,
+      isApproved: isApproved || false,
       projects: projects || [],
     };
     const result = await User.register(userData);
@@ -60,15 +48,11 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     if (!req.body) {
-      throw new AppError("Request body is required", 400, "MISSING_BODY");
+      throw new AppError("Request body is required", 400);
     }
     const { email, password } = req.body;
     if (!email || !password) {
-      throw new AppError(
-        "Email and password are required",
-        400,
-        "MISSING_FIELDS"
-      );
+      throw new AppError("Email and password are required", 400);
     }
     const result = await User.login(email, password);
 
