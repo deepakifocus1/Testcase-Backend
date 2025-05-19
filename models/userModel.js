@@ -34,6 +34,10 @@ const UserSchema = new mongoose.Schema(
     timeZone: String,
     language: String,
     team: String,
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
     projects: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -77,8 +81,7 @@ UserSchema.statics.register = async function (userData) {
     if (error.code === 11000) {
       throw new AppError(
         `Duplicate field value: ${Object.keys(error.keyValue).join(", ")}`,
-        409,
-        "DUPLICATE_KEY"
+        409
       );
     }
     if (error.name === "ValidationError") {
@@ -86,11 +89,10 @@ UserSchema.statics.register = async function (userData) {
         Object.values(error.errors)
           .map((val) => val.message)
           .join(", "),
-        400,
-        "VALIDATION_ERROR"
+        400
       );
     }
-    throw new AppError(error.message, 500, "REGISTRATION_ERROR");
+    throw new AppError(error.message, 500);
   }
 };
 
@@ -98,12 +100,12 @@ UserSchema.statics.login = async function (email, password) {
   try {
     const user = await this.findOne({ email });
     if (!user) {
-      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+      throw new AppError("Invalid credentials", 401);
     }
 
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
-      throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+      throw new AppError("Invalid credentials", 401);
     }
 
     const token = jwt.sign(
@@ -120,7 +122,7 @@ UserSchema.statics.login = async function (email, password) {
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError(error.message, 500, "LOGIN_ERROR");
+    throw new AppError(error.message, 500);
   }
 };
 

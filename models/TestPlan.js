@@ -57,6 +57,10 @@ const TestPlanSchema = new mongoose.Schema(
     dueDateTo: {
       type: Date,
     },
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+    },
 
     testRun: [testRunSchema],
   },

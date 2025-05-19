@@ -13,6 +13,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     description,
     dueDateFrom,
     dueDateTo,
+    projectId,
     testRun,
   } = req.body;
 
@@ -30,6 +31,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     dueDateFrom,
     dueDateTo,
     createdBy,
+    projectId,
     testRun: testRun || [],
   });
   if (testPlan) {
@@ -80,66 +82,9 @@ const getTestPlan = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update test plan
-// @route   PUT /api/testplans/:testPlanId/testrun/:testRunId/module/:moduleId
-// @access  Private
-// const updateTestPlanModuleStatus = asyncHandler(async (req, res) => {
-//   const { testPlanId, testRunId, moduleId } = req.params;
-//   const { status } = req.body;
-
-//   // Validate input
-//   if (!status) {
-//     res.status(400);
-//     throw new Error("Status is required");
-//   }
-
-//   // Find the test plan
-//   const testPlan = await TestPlan.findById(testPlanId);
-
-//   if (!testPlan) {
-//     res.status(404);
-//     throw new Error("Test plan not found");
-//   }
-
-//   // Find the test run
-//   const testRun = testPlan.testRun.id(testRunId);
-
-//   if (!testRun) {
-//     res.status(404);
-//     throw new Error("Test run not found");
-//   }
-
-//   // Find the module
-//   const module = testRun.module.id(moduleId);
-
-//   if (!module) {
-//     res.status(404);
-//     throw new Error("Module not found");
-//   }
-
-//   // Update the status
-//   module.status = status;
-
-//   // Save the updated test plan
-//   const response = await testPlan.save();
-//   if (response) {
-//     createActivity({
-//       createdBy: req.user.name,
-//       activityModule: "Test Plan",
-//       activity: response.name,
-//       type: "updated",
-//     });
-//   }
-
-//   res.status(200).json({
-//     success: true,
-//     data: [testPlan, testRun],
-//   });
-// });
-
 const updateTestPlanModuleStatus = asyncHandler(async (req, res) => {
   const { testPlanId, testRunId, moduleId } = req.params;
-  const testCaseData = req.body; // Get all test case data from the request body
+  const testCaseData = req.body;
 
   // Validate input
   if (!testCaseData || Object.keys(testCaseData).length === 0) {
@@ -203,10 +148,46 @@ const getTestPlanRun = async (req, res) => {
   });
 };
 
+const getTestCaseById = asyncHandler(async (req, res) => {
+  const { testPlanId, testRunId, moduleId } = req.params;
+
+  if (!testPlanId || !testRunId || !moduleId) {
+    res.status(400);
+    throw new Error("Test plan ID, test run ID, and module ID are required");
+  }
+
+  const testPlan = await TestPlan.findById(testPlanId);
+
+  if (!testPlan) {
+    res.status(404);
+    throw new Error("Test plan not found");
+  }
+
+  const testRun = testPlan.testRun.id(testRunId);
+
+  if (!testRun) {
+    res.status(404);
+    throw new Error("Test run not found");
+  }
+
+  const module = testRun.module.id(moduleId);
+
+  if (!module) {
+    res.status(404);
+    throw new Error("Test case not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    data: module,
+  });
+});
+
 module.exports = {
   createTestPlan,
   getTestPlans,
   getTestPlan,
   updateTestPlanModuleStatus,
   getTestPlanRun,
+  getTestCaseById,
 };

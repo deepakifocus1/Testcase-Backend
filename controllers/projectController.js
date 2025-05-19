@@ -24,10 +24,9 @@ exports.createProject = async (req, res) => {
 // Get all projects
 exports.getProjects = async (req, res) => {
   try {
-    const projects = await Project.find().populate(
-      "testCases",
-      "title testCaseId status module"
-    );
+    const projects = await Project.find()
+      .populate("testCases", "title testCaseId status module")
+      .populate("createdBy");
     res.json(projects);
   } catch (error) {
     res.status(500).json({ error: error.message });
