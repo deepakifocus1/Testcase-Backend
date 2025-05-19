@@ -25,8 +25,17 @@ const getAllUsers = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const { name, email, jobTitle, timeZone, language, role, team, projects } =
-      req.body || {};
+    const {
+      name,
+      email,
+      jobTitle,
+      timeZone,
+      isApproved,
+      language,
+      role,
+      team,
+      projects,
+    } = req.body || {};
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
       throw new AppError("Valid user ID is required", 400);
@@ -40,6 +49,7 @@ const updateUser = async (req, res, next) => {
     if (language) updateData.language = language;
     if (role) updateData.role = role;
     if (team) updateData.team = team;
+    if (isApproved) updateData.isApproved = isApproved;
 
     // Handle projects separately
     if (projects && Array.isArray(projects)) {
