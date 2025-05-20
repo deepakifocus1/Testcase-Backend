@@ -14,7 +14,7 @@ const { isAuthenticated } = require("../middleware/authMiddleware");
 
 // Routes
 router.post("/", isAuthenticated, createTestCase); // Create
-router.post("/upload", upload.single("file"), uploadTestCases);
+router.post("/upload", isAuthenticated, upload.single("file"), uploadTestCases);
 router.get("/download", downloadTestCasesExcel);
 router.get("/", getTestCases); // Get all or by module
 router.get("/:id", getTestCaseById); // Get by ID

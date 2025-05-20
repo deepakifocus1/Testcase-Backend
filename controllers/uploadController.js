@@ -165,7 +165,7 @@ exports.uploadTestCases = async (req, res) => {
           entityId: testCase._id,
           creatorName: createdBy,
           performedBy: createdBy,
-          message: `${createdBy} created test case "${testCase.title}"`,
+          message: `${req.user.name} created test case "${testCase.title}"`,
           comment: testCase.module,
         })
       )
