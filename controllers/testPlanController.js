@@ -30,7 +30,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
     description,
     dueDateFrom,
     dueDateTo,
-    createdBy,
+    createdBy: req.user._id,
     projectId,
     testRun: testRun || [],
   });
@@ -56,7 +56,7 @@ const createTestPlan = asyncHandler(async (req, res) => {
 // @route   GET /api/testplans
 // @access  Private
 const getTestPlans = asyncHandler(async (req, res) => {
-  const testPlans = await TestPlan.find({});
+  const testPlans = await TestPlan.find({}).populate("createdBy");
 
   res.status(200).json({
     success: true,

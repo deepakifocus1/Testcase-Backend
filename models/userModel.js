@@ -38,6 +38,10 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    accountCreatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     projects: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -102,7 +106,9 @@ UserSchema.statics.login = async function (email, password) {
     if (!user) {
       throw new AppError("Invalid credentials", 401);
     }
-
+    if (!user.isApproved) {
+      throw new AppError("Approval from Superadmin is pending.", 401);
+    }
     const isMatch = await bcryptjs.compare(password, user.password);
     if (!isMatch) {
       throw new AppError("Invalid credentials", 401);

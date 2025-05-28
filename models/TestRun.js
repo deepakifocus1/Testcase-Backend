@@ -4,11 +4,18 @@ const testRunSchema = new mongoose.Schema(
   {
     name: { type: String },
     description: String,
-    assignedTo: { type: String },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     module: { type: String },
     projectId: { type: String },
     dueDateFrom: { type: Date },
     dueDateTo: { type: Date },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     testCases: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestCase" }],
     },
