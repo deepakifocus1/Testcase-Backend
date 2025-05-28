@@ -8,7 +8,7 @@ const projectSchema = new mongoose.Schema(
       type: String,
     },
     assignedTo: {
-      type: [String],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     },
     testCases: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestCase" }],
     createdBy: {

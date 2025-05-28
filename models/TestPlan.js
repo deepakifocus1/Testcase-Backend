@@ -11,6 +11,7 @@ const testCaseSchema = new mongoose.Schema(
     steps: String,
     expectedResult: String,
     status: String,
+    type: String,
     priority: String,
     automationStatus: String,
     actualResults: String,
@@ -47,7 +48,7 @@ const TestPlanSchema = new mongoose.Schema(
     subHeading: {
       type: String,
     },
-    createdBy: String,
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     description: {
       type: String,
     },

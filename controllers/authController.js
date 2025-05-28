@@ -16,6 +16,7 @@ const register = async (req, res, next) => {
       role,
       team,
       isApproved,
+      accountCreatedBy,
       projects,
     } = req.body;
 
@@ -32,6 +33,7 @@ const register = async (req, res, next) => {
       password: "Ifocus@123",
       role,
       team,
+      accountCreatedBy,
       isApproved: isApproved || false,
       projects: projects || [],
     };

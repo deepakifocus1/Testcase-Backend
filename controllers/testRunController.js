@@ -3,7 +3,9 @@ const { createActivity } = require("../controllers/recentActivity");
 // Create a new test run
 exports.createTestRun = async (req, res) => {
   try {
-    const testRun = new TestRun(req.body);
+    const payload = req.body;
+    const currentUserId = req.user._id;
+    const testRun = new TestRun({ ...payload, createdBy: currentUserId });
     const savedTestRun = await testRun.save();
     const data = await savedTestRun.populate("testCases", "");
     if (data) {
@@ -25,7 +27,10 @@ exports.createTestRun = async (req, res) => {
 // Get all test runs
 exports.getTestRuns = async (req, res) => {
   try {
-    const testRuns = await TestRun.find().populate("testCases", "");
+    const testRuns = await TestRun.find()
+      .populate("assignedTo")
+      .populate("testCases", "")
+      .populate("createdBy");
     res.json(testRuns);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -35,10 +40,9 @@ exports.getTestRuns = async (req, res) => {
 // Get a single test run by ID
 exports.getTestRunById = async (req, res) => {
   try {
-    const testRun = await TestRun.findById(req.params.id).populate(
-      "testCases",
-      ""
-    );
+    const testRun = await TestRun.findById(req.params.id)
+      .populate("testCases", "")
+      .populate("assignedTo");
     if (!testRun) return res.status(404).json({ error: "Test run not found" });
     res.json(testRun);
   } catch (error) {

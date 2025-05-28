@@ -7,6 +7,7 @@ const getAllUsers = async (req, res, next) => {
     const users = await User.find()
       .select("-password")
       .populate("projects")
+      .populate("accountCreatedBy")
       .sort({ createdAt: -1 });
 
     if (!users || users.length === 0) {
