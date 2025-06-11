@@ -123,7 +123,7 @@ const updateTestPlanModuleStatus = asyncHandler(async (req, res) => {
   const response = await testPlan.save();
   if (response) {
     createActivity({
-      createdBy: req.user.name,
+      createdBy: req.user._id,
       activityModule: "Test Plan",
       activity: response.name,
       type: "updated",

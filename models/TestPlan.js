@@ -7,6 +7,7 @@ const testCaseSchema = new mongoose.Schema(
     userStory: String,
     testCaseId: String,
     description: String,
+    createdBy: { type: String },
     preRequisite: String,
     steps: String,
     expectedResult: String,

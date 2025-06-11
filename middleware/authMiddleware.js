@@ -5,15 +5,21 @@ const { AppError } = require("./errorHandler");
 const isAuthenticated = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new AppError("Authentication token required", 401);
     }
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "SECRET_KEY");
+    const decoded = await jwt.verify(
+      token,
+      process.env.JWT_SECRET || "SECRET_KEY"
+    );
 
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findOne({ email: decoded.email }).select(
+      "-password"
+    );
     if (!user) {
       throw new AppError("User not found", 401);
     }

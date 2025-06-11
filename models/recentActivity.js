@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const recentActivitySchema = new mongoose.Schema(
   {
-    createdBy: String,
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     activityModule: String,
     activity: String,
     type: String,

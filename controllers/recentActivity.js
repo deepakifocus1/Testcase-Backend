@@ -11,9 +11,11 @@ const createActivity = async (payload) => {
 
 const getAllRecentActivities = async (req, res) => {
   try {
-    const recentActivities = await RecentActivity.find().sort({
-      createdAt: -1,
-    });
+    const recentActivities = await RecentActivity.find()
+      .populate("createdBy")
+      .sort({
+        createdAt: -1,
+      });
     res.status(200).json(recentActivities);
   } catch (error) {
     console.error(error);
