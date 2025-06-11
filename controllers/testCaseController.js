@@ -107,6 +107,7 @@ exports.createTestCase = async (req, res) => {
     if (!project) return res.status(404).json({ error: "Project not found" });
 
     const testCaseId = await generateTestCaseId();
+    console.log(req.user);
     const script = generateScript({ ...req.body, testCaseId });
 
     const testCase = new TestCase({ ...req.body, testCaseId, script });
@@ -114,7 +115,7 @@ exports.createTestCase = async (req, res) => {
 
     if (savedTestCase) {
       createActivity({
-        createdBy: req.user.name,
+        createdBy: req.user._id,
         activityModule: "Test Case",
         activity: savedTestCase.title,
         type: "created",
@@ -205,7 +206,7 @@ exports.updateTestCase = async (req, res) => {
     if (!updated) return res.status(404).json({ error: "Test case not found" });
     if (updated) {
       createActivity({
-        createdBy: req.user.name,
+        createdBy: req.user._id,
         activityModule: "Test Case",
         activity: updated.title,
         type: "updated",

@@ -7,6 +7,7 @@ const projectRoutes = require("./routes/projectRoutes");
 const testPlanRoutes = require("./routes/testPlanRoutes");
 const testRunRoutes = require("./routes/testRunRoutes");
 const recentActivityRoutes = require("./routes/recentActivityRoutes");
+const jiraRoutes = require("./routes/jiraRoutes");
 const { globalErrorHandler } = require("./middleware/errorHandler");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -28,6 +29,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/test-plan", testPlanRoutes);
 app.use("/api/test-runs", testRunRoutes);
 app.use("/api/recent-activity", recentActivityRoutes);
+app.use("/api/jira", jiraRoutes);
 app.use(globalErrorHandler);
 // MongoDB connection
 mongoose

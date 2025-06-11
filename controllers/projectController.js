@@ -9,7 +9,7 @@ exports.createProject = async (req, res) => {
     const savedProject = await project.save();
     if (savedProject) {
       createActivity({
-        createdBy: req.user.name,
+        createdBy: req.user._id,
         activityModule: "Project",
         activity: savedProject.name,
         type: "created",
@@ -58,7 +58,7 @@ exports.updateProject = async (req, res) => {
     if (updated) {
       console.log(updated);
       createActivity({
-        createdBy: req.user.name,
+        createdBy: req.user._id,
         activityModule: "Project",
         activity: updated.name,
         type: "updated",

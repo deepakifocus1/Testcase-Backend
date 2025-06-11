@@ -122,7 +122,7 @@ exports.uploadTestCases = async (req, res) => {
     await Promise.all(
       inserted.map((testCase) =>
         createActivity({
-          createdBy,
+          createdBy: req.user._id,
           activityModule: "Test Case",
           activity: testCase.title,
           entityId: testCase._id,

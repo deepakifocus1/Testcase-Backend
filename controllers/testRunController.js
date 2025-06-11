@@ -60,7 +60,7 @@ exports.updateTestRun = async (req, res) => {
     if (!updated) return res.status(404).json({ error: "Test run not found" });
     if (updated) {
       createActivity({
-        createdBy: req.user.name,
+        createdBy: req.user._id,
         activityModule: "Test Run",
         activity: updated.name,
         type: "updated",
