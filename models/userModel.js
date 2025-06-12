@@ -5,8 +5,6 @@ const { AppError } = require("../middleware/errorHandler");
 
 const UserSchema = new mongoose.Schema(
   {
-    // firstName: String,
-    // lastName: String,
     name: String,
     email: {
       type: String,
@@ -25,7 +23,6 @@ const UserSchema = new mongoose.Schema(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
         "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)",
       ],
-      // default: "Ifocus@123",
     },
     role: {
       type: String,
