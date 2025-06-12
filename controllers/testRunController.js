@@ -1,9 +1,10 @@
 const TestRun = require("../models/TestRun");
 const { createActivity } = require("../controllers/recentActivity");
+const { testRunSchema } = require("../validations/TestRunValidations");
 // Create a new test run
 exports.createTestRun = async (req, res) => {
   try {
-    const payload = req.body;
+    const payload = testRunSchema.parse(req.body);
     const currentUserId = req.user._id;
     const testRun = new TestRun({ ...payload, createdBy: currentUserId });
     const savedTestRun = await testRun.save();
@@ -20,6 +21,9 @@ exports.createTestRun = async (req, res) => {
     }
     res.status(201).json(savedTestRun);
   } catch (error) {
+    if (error.name === "ZodError") {
+      return res.status(422).json({ error: error.errors });
+    }
     res.status(400).json({ error: error.message });
   }
 };
@@ -53,7 +57,8 @@ exports.getTestRunById = async (req, res) => {
 // Update a test run
 exports.updateTestRun = async (req, res) => {
   try {
-    const updated = await TestRun.findByIdAndUpdate(req.params.id, req.body, {
+    const payload = testRunSchema.parse(req.body);
+    const updated = await TestRun.findByIdAndUpdate(req.params.id, payload, {
       new: true,
       runValidators: true,
     }).populate("testCases", "");
@@ -68,6 +73,9 @@ exports.updateTestRun = async (req, res) => {
     }
     res.json(updated);
   } catch (error) {
+    if (error.name === "ZodError") {
+      return res.status(422).json({ error: error.errors });
+    }
     res.status(400).json({ error: error.message });
   }
 };
