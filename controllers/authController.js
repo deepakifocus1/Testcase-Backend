@@ -4,7 +4,7 @@ const { AppError } = require("../middleware/errorHandler");
 const register = async (req, res, next) => {
   try {
     if (!req.body) {
-      throw new AppError("Request body is required", 400);
+      throw new AppError(authController.requestBody, 400);
     }
     const {
       name,
@@ -21,7 +21,7 @@ const register = async (req, res, next) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      throw new AppError("User with this email already exists", 409);
+      throw new AppError(authController.userExist, 409);
     }
     const userData = {
       name,
@@ -29,7 +29,7 @@ const register = async (req, res, next) => {
       language,
       timeZone,
       email,
-      password: "Ifocus@123",
+      password: authController.password,
       role,
       team,
       isApproved: isApproved || false,
@@ -37,7 +37,7 @@ const register = async (req, res, next) => {
     };
     const result = await User.register(userData);
     res.status(201).json({
-      status: "success",
+      status: statusMessages.success,
       data: { user: result.user, token: result.token },
     });
   } catch (error) {
@@ -48,16 +48,16 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     if (!req.body) {
-      throw new AppError("Request body is required", 400);
+      throw new AppError(authController.requestBody, 400);
     }
     const { email, password } = req.body;
     if (!email || !password) {
-      throw new AppError("Email and password are required", 400);
+      throw new AppError(authController.emailPassword, 400);
     }
     const result = await User.login(email, password);
 
     res.status(200).json({
-      status: "success",
+      status: statusMessages.success,
       data: { user: result.user, token: result.token },
     });
   } catch (error) {

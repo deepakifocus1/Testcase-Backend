@@ -1,9 +1,12 @@
 const TestRun = require("../models/TestRun");
 const { createActivity } = require("../controllers/recentActivity");
+const { testRunSchema } = require("../validations/TestRunValidations");
 // Create a new test run
 exports.createTestRun = async (req, res) => {
   try {
-    const testRun = new TestRun(req.body);
+    const validateData = testRunSchema.parse(req.body);
+
+    const testRun = new TestRun(validateData);
     const savedTestRun = await testRun.save();
     const data = await savedTestRun.populate("testCases", "");
     if (data) {
@@ -18,6 +21,9 @@ exports.createTestRun = async (req, res) => {
     }
     res.status(201).json(savedTestRun);
   } catch (error) {
+    if (error.name === "ZodError") {
+      return res.status(422).json({ error: error.errors });
+    }
     res.status(400).json({ error: error.message });
   }
 };
