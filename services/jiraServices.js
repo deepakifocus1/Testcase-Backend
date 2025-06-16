@@ -15,9 +15,6 @@ const auth = {
 
 //CREATE PROJECT IN JIRA
 async function createProject({ projectName, projKey }) {
-  if (!projectName || !projKey) {
-    throw new AppError("projectName and projKey are required", 400);
-  }
   if (!username || !password || !domain || !leadAccountID) {
     throw new AppError("Missing required environment variables", 500);
   }
@@ -59,16 +56,7 @@ async function createProject({ projectName, projKey }) {
 }
 
 //CREATE ISSUE IN JIRA
-async function createIssue({ projectKey, issueType, summary, description }) {
-  if (!projectKey || !issueType || !summary || !description) {
-    throw new AppError(
-      "Project key, issue type, summary and description are required",
-      400
-    );
-  }
-  if (!username || !password || !domain || !leadAccountID) {
-    throw new AppError("Missing required environment variables", 500);
-  }
+async function createIssue({ projectKey, issueType, description, summary }) {
   try {
     const data = {
       fields: {

@@ -1,6 +1,7 @@
 const TestRun = require("../models/TestRun");
 const { createActivity } = require("../controllers/recentActivity");
 const { testRunSchema } = require("../validations/TestRunValidations");
+const { ERROR_MESSAGES, SUCCESS_MESSAGES } = require("../constants/constants");
 // Create a new test run
 exports.createTestRun = async (req, res) => {
   try {
@@ -47,7 +48,8 @@ exports.getTestRunById = async (req, res) => {
     const testRun = await TestRun.findById(req.params.id)
       .populate("testCases", "")
       .populate("assignedTo");
-    if (!testRun) return res.status(404).json({ error: "Test run not found" });
+    if (!testRun)
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTRUN_NOT_FOUND });
     res.json(testRun);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -62,7 +64,8 @@ exports.updateTestRun = async (req, res) => {
       new: true,
       runValidators: true,
     }).populate("testCases", "");
-    if (!updated) return res.status(404).json({ error: "Test run not found" });
+    if (!updated)
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTRUN_NOT_FOUND });
     if (updated) {
       createActivity({
         createdBy: req.user._id,
@@ -84,8 +87,9 @@ exports.updateTestRun = async (req, res) => {
 exports.deleteTestRun = async (req, res) => {
   try {
     const testRun = await TestRun.findByIdAndDelete(req.params.id);
-    if (!testRun) return res.status(404).json({ error: "Test run not found" });
-    res.json({ message: "Test run deleted" });
+    if (!testRun)
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTRUN_NOT_FOUND });
+    res.json({ message: SUCCESS_MESSAGES.TESTRUN_DELETED });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

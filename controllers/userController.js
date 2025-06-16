@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const { AppError } = require("../middleware/errorHandler");
 const mongoose = require("mongoose");
+const { ERROR_MESSAGES, SUCCESS_MESSAGES } = require("../constants/constants");
 
 const getAllUsers = async (req, res, next) => {
   try {
@@ -11,7 +12,7 @@ const getAllUsers = async (req, res, next) => {
       .sort({ createdAt: -1 });
 
     if (!users || users.length === 0) {
-      throw new AppError("No users found", 404);
+      throw new AppError(ERROR_MESSAGES.NO_USERS_FOUND, 404);
     }
 
     res.status(200).json({
@@ -39,7 +40,7 @@ const updateUser = async (req, res, next) => {
     } = req.body || {};
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
-      throw new AppError("Valid user ID is required", 400);
+      throw new AppError(ERROR_MESSAGES.VALID_ID_REQUIRED, 400);
     }
 
     const updateData = {};
@@ -58,7 +59,7 @@ const updateUser = async (req, res, next) => {
         mongoose.isValidObjectId(id)
       );
       if (validProjects.length !== projects.length) {
-        throw new AppError("One or more project IDs are invalid", 400);
+        throw new AppError(ERROR_MESSAGES.INVALID_ID, 400);
       }
       updateData.$addToSet = { projects: { $each: validProjects } };
     }
@@ -67,7 +68,7 @@ const updateUser = async (req, res, next) => {
       if (existingUser && existingUser._id.toString() !== userId) {
         return res.status(409).json({
           status: "error",
-          message: "Email is already in use by another user",
+          message: ERROR_MESSAGES.EMAIL_EXIST,
         });
       }
     }
@@ -79,7 +80,7 @@ const updateUser = async (req, res, next) => {
     });
 
     if (!updatedUser) {
-      throw new AppError("User not found or update failed", 404);
+      throw new AppError(ERROR_MESSAGES.USER_NOT_UPDATED, 404);
     }
 
     res.status(200).json({
@@ -114,17 +115,17 @@ const deleteUser = async (req, res, next) => {
     const { userId } = req.params;
 
     if (!userId || !mongoose.isValidObjectId(userId)) {
-      throw new AppError("Valid user ID is required", 400);
+      throw new AppError(ERROR_MESSAGES.INVALID_ID, 400);
     }
 
     const deletedUser = await User.findByIdAndDelete(userId);
 
     if (!deletedUser) {
-      throw new AppError("User not found or deletion failed", 404);
+      throw new AppError(ERROR_MESSAGES.USER_NOT_DELETED, 404);
     }
     res.status(200).json({
       status: "success",
-      message: "User deleted successfully",
+      message: SUCCESS_MESSAGES.USER_DELETED,
     });
   } catch (error) {
     next(error);
