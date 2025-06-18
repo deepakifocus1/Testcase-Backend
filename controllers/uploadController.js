@@ -2,6 +2,7 @@ const xlsx = require("xlsx");
 const TestCase = require("../models/TestCase");
 const Project = require("../models/Project");
 const ActivityLog = require("../models/ActivityLog");
+const { SUCCESS_MESSAGES, ERROR_MESSAGES } = require("../constants/constants");
 
 const generateTestCaseId = async (startSequence) => {
   return `TC-${String(startSequence).padStart(4, "0")}`;
@@ -36,7 +37,8 @@ const createActivity = async ({
 
 exports.uploadTestCases = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    if (!req.file)
+      return res.status(400).json({ error: ERROR_MESSAGES.NO_FILE_UPLOADED });
 
     const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
@@ -48,11 +50,12 @@ exports.uploadTestCases = async (req, res) => {
     if (!moduleFromFrontend || !projectId || !createdBy) {
       return res
         .status(400)
-        .json({ error: "Module name, project ID, and createdBy are required" });
+        .json({ error: ERROR_MESSAGES.MODULE_PROJECTID_REQ });
     }
 
     const project = await Project.findById(projectId);
-    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!project)
+      return res.status(404).json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
 
     // Find the highest testCaseId in the testcases collection
     const lastTestCase = await TestCase.findOne()
@@ -132,7 +135,7 @@ exports.uploadTestCases = async (req, res) => {
     );
 
     res.status(201).json({
-      message: "Test cases uploaded",
+      message: SUCCESS_MESSAGES.TESTCASE_UPLOADED,
       insertedCount: inserted.length,
     });
   } catch (error) {

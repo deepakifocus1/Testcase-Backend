@@ -3,7 +3,13 @@ const Project = require("../models/Project");
 const ExcelJS = require("exceljs");
 const ActivityLog = require("../models/ActivityLog");
 const { createActivity } = require("./recentActivity");
-
+const { testCaseSchema } = require("../validations/TestCaseValidation");
+const { AppError } = require("../middleware/errorHandler");
+const {
+  authController,
+  ERROR_MESSAGES,
+  SUCCESS_MESSAGES,
+} = require("../constants/constants");
 // Helper function to generate testCaseId
 const generateTestCaseId = async () => {
   const count = await TestCase.countDocuments();
@@ -94,23 +100,30 @@ exports.downloadTestCasesExcel = async (req, res) => {
   }
 };
 
-exports.createTestCase = async (req, res) => {
+//CREATE TESTCASE
+exports.createTestCase = async (req, res, next) => {
   try {
-    const { title, projectId, createdBy } = req.body;
-    if (!title || !projectId || !createdBy) {
-      return res
-        .status(400)
-        .json({ error: "Title, Project ID, and CreatedBy are required" });
+    if (!req.body) {
+      throw new AppError(authController.requestBody, 400);
+    }
+    const { error, value: payload } = testCaseSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      const errorMessage = error.details
+        .map((detail) => detail.message)
+        .join(", ");
+      throw new AppError(errorMessage, 400);
     }
 
+    const { title, projectId, createdBy } = payload;
+
     const project = await Project.findById(projectId);
-    if (!project) return res.status(404).json({ error: "Project not found" });
-
+    if (!project) throw new AppError(ERROR_MESSAGES.PROJECT_NOT_FOUND);
     const testCaseId = await generateTestCaseId();
-    console.log(req.user);
-    const script = generateScript({ ...req.body, testCaseId });
-
-    const testCase = new TestCase({ ...req.body, testCaseId, script });
+    const script = generateScript({ ...payload, testCaseId });
+    const testCase = new TestCase({ ...payload, testCaseId, script });
     const savedTestCase = await testCase.save();
 
     if (savedTestCase) {
@@ -125,7 +138,6 @@ exports.createTestCase = async (req, res) => {
     project.testCases.push(savedTestCase._id);
     await project.save();
 
-    // ✅ Log the activity
     await ActivityLog.create({
       action: "created",
       entity: "TestCase",
@@ -138,10 +150,11 @@ exports.createTestCase = async (req, res) => {
 
     res.status(201).json(savedTestCase);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    next();
   }
 };
 
+//GET TESTCASES
 exports.getTestCases = async (req, res) => {
   try {
     const testCases = await TestCase.aggregate([
@@ -164,7 +177,7 @@ exports.getTestCases = async (req, res) => {
   }
 };
 
-// Get a single test case by ID
+// GET SIGNLE TESTCASE ID
 exports.getTestCaseById = async (req, res) => {
   try {
     const testCase = await TestCase.findById(req.params.id).populate(
@@ -172,13 +185,14 @@ exports.getTestCaseById = async (req, res) => {
       "name"
     );
     if (!testCase)
-      return res.status(404).json({ error: "Test case not found" });
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTCASE_NOT_FOUND });
     res.json(testCase);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+//UPDATE TESTCASE
 exports.updateTestCase = async (req, res) => {
   try {
     const updateData = { ...req.body };
@@ -187,12 +201,17 @@ exports.updateTestCase = async (req, res) => {
 
     const { updatedBy } = req.body;
     if (!updatedBy) {
-      return res.status(400).json({ error: "updatedBy is required" });
+      return res
+        .status(400)
+        .json({ error: ERROR_MESSAGES.UPDATED_BY_REQUIRED });
     }
 
     if (updateData.projectId) {
       const project = await Project.findById(updateData.projectId);
-      if (!project) return res.status(404).json({ error: "Project not found" });
+      if (!project)
+        return res
+          .status(404)
+          .json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
     }
 
     const updated = await TestCase.findByIdAndUpdate(
@@ -203,7 +222,8 @@ exports.updateTestCase = async (req, res) => {
       }
     ).populate("projectId", "name");
 
-    if (!updated) return res.status(404).json({ error: "Test case not found" });
+    if (!updated)
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTCASE_NOT_FOUND });
     if (updated) {
       createActivity({
         createdBy: req.user._id,
@@ -228,19 +248,19 @@ exports.updateTestCase = async (req, res) => {
   }
 };
 
-// Delete a test case
+// DELETE TESTCASE
 exports.deleteTestCase = async (req, res) => {
   try {
     const testCase = await TestCase.findById(req.params.id);
     if (!testCase)
-      return res.status(404).json({ error: "Test case not found" });
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTCASE_NOT_FOUND });
     // Remove test case from project's testCases array
     await Project.updateOne(
       { _id: testCase.projectId },
       { $pull: { testCases: testCase._id } }
     );
     await testCase.deleteOne();
-    res.json({ message: "Test case deleted" });
+    res.json({ message: SUCCESS_MESSAGES.TESTCASE_DELETED });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

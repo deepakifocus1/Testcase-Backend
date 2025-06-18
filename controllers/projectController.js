@@ -1,11 +1,32 @@
 const Project = require("../models/Project");
 const TestCase = require("../models/TestCase");
-const { createActivity } = require("../controllers/recentActivity"); // Import createActivity from recentActivity.js
+const { createActivity } = require("../controllers/recentActivity");
+const { AppError } = require("../middleware/errorHandler");
+const {
+  authController,
+  ERROR_MESSAGES,
+  SUCCESS_MESSAGES,
+} = require("../constants/constants");
+const { projectSchema } = require("../validations/ProjectValidationJoi");
 
 // Create a new project
-exports.createProject = async (req, res) => {
+exports.createProject = async (req, res, next) => {
   try {
-    const project = new Project(req.body);
+    if (!req.body) {
+      throw new AppError(authController.requestBody, 400);
+    }
+    const { error, value: payload } = projectSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      const errorMessage = error.details
+        .map((detail) => detail.message)
+        .join(", ");
+      throw new AppError(errorMessage, 400);
+    }
+
+    const project = new Project(payload);
     const savedProject = await project.save();
     if (savedProject) {
       createActivity({
@@ -17,7 +38,7 @@ exports.createProject = async (req, res) => {
     }
     res.status(201).json(savedProject);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -41,7 +62,8 @@ exports.getProjectById = async (req, res) => {
       "testCases",
       "title testCaseId status"
     );
-    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!project)
+      return res.status(404).json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
     res.json(project);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -54,7 +76,8 @@ exports.updateProject = async (req, res) => {
     const updated = await Project.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    if (!updated) return res.status(404).json({ error: "Project not found" });
+    if (!updated)
+      return res.status(404).json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
     if (updated) {
       console.log(updated);
       createActivity({
@@ -74,14 +97,15 @@ exports.updateProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
-    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!project)
+      return res.status(404).json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
     // Remove projectId from associated test cases
     await TestCase.updateMany(
       { projectId: project._id },
       { $unset: { projectId: "" } }
     );
     await project.deleteOne();
-    res.json({ message: "Project deleted" });
+    res.json({ message: SUCCESS_MESSAGES.PROJECT_DELETED });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -90,22 +114,23 @@ exports.deleteProject = async (req, res) => {
 // Add a test case to a project
 exports.addTestCaseToProject = async (req, res) => {
   try {
-    const { testCaseId } = req.body; // Expect MongoDB _id of test case
+    const { testCaseId } = req.body;
     const project = await Project.findById(req.params.id);
-    if (!project) return res.status(404).json({ error: "Project not found" });
+    if (!project)
+      return res.status(404).json({ error: ERROR_MESSAGES.PROJECT_NOT_FOUND });
     const testCase = await TestCase.findById(testCaseId);
     if (!testCase)
-      return res.status(404).json({ error: "Test case not found" });
-    // Update test case's projectId
+      return res.status(404).json({ error: ERROR_MESSAGES.TESTCASE_NOT_FOUND });
+
     testCase.projectId = project._id;
     await testCase.save();
-    // Add test case to project's testCases array
+
     if (!project.testCases.includes(testCaseId)) {
       project.testCases.push(testCaseId);
       await project.save();
     }
 
-    res.json({ message: "Test case added to project", project });
+    res.json({ message: SUCCESS_MESSAGES.TESTCASE_ADDED_PROJECT, project });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
