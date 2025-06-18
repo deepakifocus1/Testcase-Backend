@@ -24,13 +24,16 @@ const jiraIssueSchema = Joi.object({
     "any.required": "Project Key is required.",
     "string.empty": "Project Key cannot be empty.",
   }),
-  issueType: Joi.string()
-    .valid("Bug", "Task", "Story", "Epic")
-    .required()
-    .messages({
-      "any.required": "Issue type is required.",
-      "string.empty": "Project Key cannot be empty.",
-    }),
+  // issueKey: Joi.string().alphanum().min(2).max(5).required().messages({
+  //   "any.required": "Issue Key is required.",
+  //   "string.empty": "Issue Key cannot be empty.",
+  // }),
+  issueType: Joi.string().valid("Bug", "Task", "Story").required().messages({
+    "any.required": "Issue type is required.",
+    "string.empty": "Issue type cannot be empty.",
+  }),
+
+  testCase: Joi.string().optional(),
 });
 
 module.exports = {

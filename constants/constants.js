@@ -11,6 +11,7 @@ const STATUS_MESSAGE = {
 const ERROR_MESSAGES = {
   SERVER_ERROR: "Internal server error",
   FAILED_PROJECT_CREATION: "Failed to create project in Jira",
+  FAILED_ISSUE_CREATION: "Failed to create Issue in Jira",
   PROJECT_NOT_FOUND: "Project not found",
   TESTCASE_NOT_FOUND: "Testcase not found",
   TESTRUN_NOT_FOUND: "Test run not found",
@@ -31,6 +32,7 @@ const ERROR_MESSAGES = {
   USER_NOT_DELETED: "User not found or  deleted",
   AUTH_TOKEN_REQUIRED: "Authentication token required",
   PERMISSION_DENIED: "You do not have permission to perform this action",
+  ISSUE_NOT_FOUND: "Issue not  found",
 };
 const SUCCESS_MESSAGES = {
   USER_CREATED: "User created Successfully",

@@ -46,7 +46,13 @@ exports.getTestRuns = async (req, res) => {
 exports.getTestRunById = async (req, res) => {
   try {
     const testRun = await TestRun.findById(req.params.id)
-      .populate("testCases", "")
+      .populate({
+        path: "testCases",
+        populate: {
+          path: "projectId",
+          model: "Project",
+        },
+      })
       .populate("assignedTo");
     if (!testRun)
       return res.status(404).json({ error: ERROR_MESSAGES.TESTRUN_NOT_FOUND });

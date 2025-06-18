@@ -14,6 +14,7 @@ const {
   createIssue,
   getIssues,
 } = require("../services/jiraServices");
+const JiraIssue = require("../models/JiraIssues"); // Add this import
 
 //CREATE PROJECT CONTROLLER
 const createProjectInJira = async (req, res, next) => {
@@ -67,16 +68,27 @@ const createIssueInJira = async (req, res, next) => {
       throw new AppError(errorMessage, 400);
     }
 
-    const key = await createIssue(payload);
+    const issueKey = await createIssue(payload);
 
-    if (!key) {
-      throw new AppError(ERROR_MESSAGES.FAILED_PROJECT_CREATION, 500);
+    if (!issueKey) {
+      throw new AppError(ERROR_MESSAGES.FAILED_ISSUE_CREATION, 500);
     }
+
+    const jiraIssue = new JiraIssue({
+      projectKey: payload.projectKey,
+      issueKey: issueKey,
+      testCase: payload.testCase,
+      issueType: payload.issueType,
+      summary: payload.summary,
+      Description: payload.Description,
+    });
+
+    await jiraIssue.save();
 
     return res.status(201).json({
       status: STATUS_MESSAGE.SUCCESS,
       message: SUCCESS_MESSAGES.ISSUE_CREATED,
-      data: { projectKey: key },
+      data: { projectKey: issueKey },
     });
   } catch (error) {
     next(error);
@@ -104,4 +116,54 @@ const fetchIssuesFromJira = async (req, res) => {
 //UPDATE ISSUE CONTROLLER
 const updateIssueInJira = async (req, res) => {};
 
-module.exports = { createProjectInJira, createIssueInJira, updateIssueInJira };
+//FETCH ISSUES FROM DATABASE
+const fetchIssuesFromDb = async (req, res) => {
+  try {
+    const issues = await JiraIssue.find();
+    if (!issues) throw new AppError(ERROR_MESSAGES.SERVER_ERROR, 500);
+    res.status(200).json({
+      success: true,
+      message: SUCCESS_MESSAGES.ISSUE_FETCHED,
+      data: { issues },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SERVER_ERROR,
+      error: error.message,
+    });
+  }
+};
+//FETCH ISSUES BY ID FROM DATABASE
+const fetchIssueByIdFromDb = async (req, res) => {
+  try {
+    const issueKey = req.params.id;
+    const issue = await JiraIssue.find({ issueKey }).populate({
+      path: "testCase",
+      populate: {
+        path: "projectId",
+        model: "Project",
+      },
+    });
+    if (!issue) throw new AppError(ERROR_MESSAGES.ISSUE_NOT_FOUND, 404);
+    res.status(200).json({
+      success: true,
+      message: SUCCESS_MESSAGES.ISSUE_FETCHED,
+      data: { issue },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: ERROR_MESSAGES.SERVER_ERROR,
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  createProjectInJira,
+  createIssueInJira,
+  updateIssueInJira,
+  fetchIssuesFromDb,
+  fetchIssueByIdFromDb,
+};
